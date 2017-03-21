@@ -1,0 +1,21 @@
+credentials:
+    username: user@domain.com
+
+# Trains
+trains:
+    - origin: NYP
+      destination: WAS
+      day_of_week: Thursday
+      times:
+          - time: 08:00
+            max_price: 100
+          - time: 09:00
+            max_price: 100
+    - origin: WAS
+      destination: NYP
+      day_of_week: Sunday
+      times:
+          - time: 20:00
+            max_price: 100
+          - time: 21:00
+            max_price: 100
