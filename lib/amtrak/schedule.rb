@@ -20,8 +20,11 @@ module Amtrak
       raise ArgumentError "Time or train must not be nil" if time.nil? && train.nil?
       
       fetch(date, origin, destination) do |train, buy_form, lowest_price_radio_button, add_to_cart_button|
+        # puts "time to buy: #{time}"
+        # puts "train.departure_time: #{train.departure_time}"
+        # puts "difference:  #{(time - train.departure_time).abs} < #{15.minutes} "
         
-        if (time - train.departure_time).abs > 15.minutes
+        if (time - train.departure_time).abs < 15.minutes
           Amtrak.logger.debug "Found a train within 15 minutes of desired time (#{time})"
           
           if train.cost <= max_price
@@ -34,9 +37,10 @@ module Amtrak
             train_info = itinerary_page.search("//div[@id='itinerary_wrapper']" \
               "/div[contains(@class, 'content_area')]/div[contains(@class, 'content')]/p").text
             if train.train_number.match(train_info)
-              puts "Verified the train #"
-              passenger_info_page = itinerary_page.forms[1].submit
-              pp passenger_info_page
+              Amtrak.logger.debug "Verified the train #"
+              passenger_page = itinerary_page.forms[1].submit
+              payment_page = process_passenger_info(passenger_page)
+              process_payment(payment_page)
             end
           else
             puts "The lowest price (#{train.cost}) was higher than your max (#{max_price})"
@@ -47,6 +51,31 @@ module Amtrak
     end
     
     def process_passenger_info(passenger_page)
+      form = passenger_page.form('form')
+      # Send a text alert if the train is running late
+      Amtrak.logger.debug "Set up mobile notification for 45 mins"
+      form.field_with(name: 'wdf_trainstatusalertmethod').value = 'S'
+      # Set this to be hardcoded at 45 mins for now
+      form.field_with(name: 'wdf_trainstatusalerttime').value = '00:45:00'
+      passenger_page = form.submit(form.button_with(name: 'un_jtt_trainStatusAlertMethod_change'))
+      form = passenger_page.form('form')
+      # Decline the insurance
+      Amtrak.logger.debug "Decline the insurance"
+      form.radiobutton_with(name: 'AmtrakInsuranceOfferRadioOption1',
+                            value: 'Declined').check
+      pp passenger_page
+      form.submit(form.button_with(name: '_handler=amtrak.presentation.handler.request.basket.AmtrakBasketTravellersRequestHandler'))
+    end
+    
+    def process_payment(payment_page)
+      Amtrak.logger.debug "Apply the first voucher, if available"
+      form = payment_page.form_with(id: 'payment_form')
+      # See if there are any vouchers to be processed
+      payment_page = form.submit(form.button_with(name: 'un_jtt_retrieve'))
+      form = payment_page.form_with(id: 'payment_form')
+      pp payment_page.body
+      pp form
+      # TODO: if we see checkboxes, check the first one and then hit submit
       
     end
     
