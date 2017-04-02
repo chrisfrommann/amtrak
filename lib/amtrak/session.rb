@@ -11,7 +11,7 @@ module Amtrak
       @errors = []
     end
     
-    def login(username:, password:, attempts: 2)
+    def login(username: nil, password: nil, attempts: 2)
       @username ||= username
       @password ||= password
       
@@ -27,10 +27,10 @@ module Amtrak
         agent.cookie_jar.save(cookie_path, session: true)
       end
       
-      if page.search("#un_logged_in").size > 0
+      if page.search("#un_logged_in").size > 0 || page.search("#pi_actions_list_logged_in").size > 0
         @logged_in = true
       elsif attempts > 0
-        login(attempts - 1)
+        login(attempts: attempts - 1)
       else
         @logged_in = false
         @errors << 'Invalid or expired credentials'
@@ -59,6 +59,10 @@ module Amtrak
       end
     end
     
+    def accessible?
+      false
+    end
+    
     private
     
     def cookie_path
@@ -66,7 +70,8 @@ module Amtrak
     end
     
     def login_uri
-      'https://assistive.usablenet.com/tt/tickets.amtrak.com/itd/amtrak'
+      'https://tickets.amtrak.com/itd/amtrak'
+      #'https://assistive.usablenet.com/tt/tickets.amtrak.com/itd/amtrak'
     end
     
     def logout_uri

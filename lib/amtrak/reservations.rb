@@ -12,7 +12,7 @@ module Amtrak
     end
     
     def all
-      raise ArgumentError 'Must be logged in to request reservations' unless session.logged_in?
+      raise ArgumentError('Must be logged in to request reservations') unless session.logged_in?
       @reservations ||= fetch
     end
     
@@ -53,7 +53,8 @@ module Amtrak
     end
     
     def reservations_uri
-      'https://assistive.usablenet.com/tt/tickets.amtrak.com/itd/amtrak/Reservations?un_jtt_v_show=yes'
+      #'https://assistive.usablenet.com/tt/tickets.amtrak.com/itd/amtrak/Reservations?un_jtt_v_show=yes'
+      'https://tickets.amtrak.com/itd/amtrak/Reservations'
     end
     
   end

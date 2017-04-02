@@ -8,6 +8,7 @@
 /coverage/
 /spec/tmp/*
 .DS_Store
+*.log
 
 # Ignore application configuration
 /config.yml
