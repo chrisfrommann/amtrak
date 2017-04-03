@@ -19,6 +19,7 @@ require 'amtrak'
 cli = HighLine.new
 
 config = YAML.load_file('config.yml')
+# config.symbolize_keys!
 trains_by_dow = {}
 config['trains'].each do |train|
   trains_by_dow[train['day_of_week']] ||= []
@@ -38,7 +39,7 @@ puts '========= Log-in ========='.blue.bold
 #   end
 # end
 
-config['credentials']['password'] = cli.ask("Enter your Amtrak username:  ") do |q|
+config['credentials']['username'] = cli.ask("Enter your Amtrak username:  ") do |q|
   q.default = config['credentials']['username']
 end
 unless config['credentials'].has_key? 'password'
@@ -55,7 +56,7 @@ if is_cc_billing
   config['billing'] = {
     'name' => cli.ask("What's your name on your card?") { |q| q.default = config['billing']['name'] },
     'credit_card_number' => cli.ask("Enter your credit card number:") do |q|
-      q.default = config['billing']['credit_card_number']
+      q.default = config['billing']['credit_card_number'].to_s
     end,
     'credit_card_security_code' => cli.ask("What's your card security code") { |q| q.limit = 4 },
     'credit_card_expiration' => cli.ask("Enter the card expiration date", Date) do |q|
@@ -71,7 +72,7 @@ if is_cc_billing
     'state_province' => cli.ask("Enter your state or province") do |q|
       q.default = config['billing']['state_province']
     end,
-    'postal_code' => cli.ask("Enter the postal code") { |q| q.default = config['billing']['postal_code'] }
+    'postal_code' => cli.ask("Enter the postal code") { |q| q.default = config['billing']['postal_code'].to_s }
   }
   puts config['billing'].inspect
 end

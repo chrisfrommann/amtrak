@@ -42,7 +42,7 @@ module Amtrak
               payment_page = process_passenger_info(passenger_page)
               confirmation_page = process_payment(payment_page, train, billing_info)
               # TODO: verify it went through
-              pp confirmation_page
+              pp confirmation_page.body
             end
           else
             puts "The lowest price (#{train.cost}) was higher than your max (#{max_price})"
@@ -94,13 +94,16 @@ module Amtrak
         form.field_with(name: 'wdf_cc_postcode').value = billing_info['postal_code']
       end
       
+      pp form
       Amtrak.logger.debug "Agree to the terms and conditions"
       # Oddly mechanizer won't let us select the existing field, perhaps
       # because it doesn't have a name or value?
       form.add_field!('termsandconditions', '1')
       
       # Make the purchase!
-      form.submit(form.button_with(id: 'passenger_info_button'))
+      #form.submit(form.button_with(id: 'passenger_info_button'))
+      form.submit(form.button_with(name: "_xpath=/sessionWorkflow/basketWorkflow/basket/purchase/"+
+        "bookingProduct[@type='com.sita.ats.itd.model.purchase.TravelBookingProduct']/product/trip"))
     end
     
     def apply_vouchers(form, train)
